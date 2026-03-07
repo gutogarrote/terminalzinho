@@ -1,63 +1,88 @@
-# tiny-terminal
+# terminalzinho
 
-A fake terminal where kids can type anything and get fun, safe responses. Single HTML file, no dependencies, runs offline.
+Um terminal falso onde crianças podem digitar qualquer coisa e receber respostas divertidas e seguras. Um único arquivo HTML, sem dependências, funciona offline.
 
-Built by [@meimakes](https://x.com/meimakes)
+Criado por [@meimakes](https://x.com/meimakes)
 
 
 <img width="946" height="519" alt="image" src="https://github.com/user-attachments/assets/a957eac1-a42c-44b5-96a0-21b5253b4b34" />
 
-## Problem
+## Problema
 
-Most "learn to type" apps are boring drills or require accounts and installations. Toddlers and pre-readers need something that rewards every keypress — real words AND keyboard smashing — without frustration or failure states.
+A maioria dos aplicativos de "aprender a digitar" são exercícios entediantes ou exigem cadastro e instalação. Crianças pequenas e pré-leitoras precisam de algo que recompense cada tecla pressionada — palavras reais E teclado amassado — sem frustração ou estados de falha.
 
-## Solution
+## Solução
 
-A browser-based terminal that responds to everything a child types:
+Um terminal no navegador que responde a tudo que uma criança digita:
 
-- **Animals** — ASCII art + sounds for 20 animals (cat, dog, shark, dinosaur, lobster...)
-- **Vehicles** — trucks, airplanes, rockets, excavators, cranes, bulldozers...
-- **Colors** — type a color, see emoji things that are that color
-- **Letters** — type any letter, see it big with its alphabet animal
-- **Numbers** — type a number, see that many emoji. Big numbers (1000+) get a count-up animation
-- **Keyboard smashing** — always fun. Emoji explosions, creatures built from typed letters, rainbow spells
-- **Challenges** — after a few gibberish entries, a picture prompt appears ("what animal is this?") to nudge toward real words
+- **Animais** — arte ASCII + sons para 20 animais (gato, cachorro, tubarão, dinossauro, lagosta...)
+- **Veículos** — caminhões, aviões, foguetes, escavadeiras, guindastes, tratores...
+- **Cores** — digite uma cor, veja emojis de coisas com essa cor
+- **Letras** — digite qualquer letra, veja ela grande com seu animal
+- **Números** — digite um número, veja essa quantidade de emojis. Números grandes (1000+) ganham uma animação de contagem
+- **Teclado amassado** — sempre divertido! Explosões de emojis, criaturas feitas das letras digitadas, feitiços arco-íris
+- **Desafios** — após algumas entradas sem sentido, aparece um desafio com imagem ("que animal é esse?") para incentivar a digitar palavras reais
 
-Nothing is ever an error. Every keypress is a win.
+Nada é nunca um erro. Cada tecla pressionada é uma vitória.
 
-## Usage
+## Como usar
 
-Open `index.html` in any browser. That's it.
+Abra o arquivo `index.html` em qualquer navegador. É só isso.
 
-Works on desktop and mobile. Supports light and dark mode (follows system preference).
+Funciona no computador e no celular. Suporta modo claro e escuro (segue a preferência do sistema).
 
-## Features
+## Funcionalidades
 
-- Zero dependencies, zero build step, zero server
-- 20 animals with ASCII art
-- 12 vehicles with ASCII art
-- 10 colors with emoji collections
-- Full alphabet with animal associations
-- Number visualization (1-10: emoji rows, 11-999: scaled display, 1000+: count-up animation)
-- Keyboard smash detection with 5 varied response types
-- Picture challenges that nudge toward real words
-- Jokes, magic words, dance party, rainbow mode
-- Dark mode + light mode (prefers-color-scheme)
-- ASCII art "hello!" welcome with random emoji on each load
+- Zero dependências, zero build, zero servidor
+- 20 animais com arte ASCII
+- 12 veículos com arte ASCII
+- 10 cores com coleções de emojis
+- Alfabeto completo com associações de animais
+- Visualização de números (1-10: fileiras de emojis, 11-999: exibição em escala, 1000+: animação de contagem)
+- Detecção de teclado amassado com 5 tipos de resposta variados
+- Desafios com imagens que incentivam a digitar palavras reais
+- Piadas, palavras mágicas, festa dançante, modo arco-íris
+- Modo escuro + modo claro (prefers-color-scheme)
+- Arte ASCII "hello!" de boas-vindas com emojis aleatórios a cada carregamento
+- Bilíngue: funciona em português e inglês (gato/cat, aviao/airplane, vermelho/red...)
 
-## Design Philosophy
+## Comandos disponíveis
 
-- Every input gets a positive response
-- Short output — single lines, not paragraphs
-- Visual over textual (emoji, ASCII art, big letters)
-- Gibberish is celebrated, real words are rewarded more
-- Gentle nudges toward typing real words via picture challenges
-- No scores, no failures, no ads, no tracking
+| Português | Inglês | O que faz |
+|-----------|--------|-----------|
+| gato, cachorro, sapo... | cat, dog, frog... | Mostra arte ASCII + som do animal |
+| aviao, foguete, trem... | airplane, rocket, train... | Mostra arte ASCII + som do veículo |
+| vermelho, azul, verde... | red, blue, green... | Mostra emojis dessa cor |
+| a, b, c... | a, b, c... | Mostra a letra grande com um animal |
+| 1, 2, 3, 1000... | 1, 2, 3, 1000... | Mostra emojis ou animação de contagem |
+| piada | joke | Conta uma piada |
+| danca / festa | dance / party | Festa de dança! |
+| magia / abracadabra | magic / abracadabra | Feitiço mágico |
+| arco-iris | rainbow | Arco-íris colorido |
+| robo | robot | Mostra o robô |
+| lua / sol / estrelas | moon / sun / stars | Emojis do espaço |
+| animais | animals | Lista todos os animais |
+| veiculos | vehicles | Lista todos os veículos |
+| cores | colors | Lista todas as cores |
+| letras | letters | Mostra o alfabeto |
+| numeros | numbers | Mostra os números |
+| limpar | clear | Limpa a tela |
+| eu sou [nome] | i am [nome] | Cumprimento personalizado |
+| ajuda | help | Mostra os comandos principais |
 
-## More like this
+## Filosofia de Design
 
-I built tiny-terminal as part of teaching my 3-year-old computational thinking through play. I wrote a whole curriculum around it — [12 Weeks of Tech Projects to Build With Your Kid](https://shop.raisingpixels.dev/l/12-weeks-tech-projects). 60 activities, mostly unplugged, for ages 2-6.
+- Toda entrada recebe uma resposta positiva
+- Saída curta — linhas simples, sem parágrafos
+- Visual em vez de textual (emojis, arte ASCII, letras grandes)
+- Teclado amassado é celebrado, palavras reais são recompensadas mais
+- Incentivos suaves para digitar palavras reais através de desafios com imagens
+- Sem pontuação, sem falhas, sem anúncios, sem rastreamento
 
-## License
+## Mais como este
+
+Eu criei o terminalzinho como parte do ensino de pensamento computacional para minha criança de 3 anos através da brincadeira. Escrevi um currículo completo sobre isso — [12 Weeks of Tech Projects to Build With Your Kid](https://shop.raisingpixels.dev/l/12-weeks-tech-projects). 60 atividades, principalmente desplugadas, para idades de 2 a 6 anos.
+
+## Licença
 
 MIT
