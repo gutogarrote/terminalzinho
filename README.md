@@ -2,7 +2,7 @@
 
 Um terminal falso onde crianças podem digitar qualquer coisa e receber respostas divertidas e seguras. Um único arquivo HTML, sem dependências, funciona offline.
 
-Criado por [@meimakes](https://x.com/meimakes)
+Traduzido e adaptado por [@gutogarrote](https://github.com/gutogarrote) a partir da criação de [@meimakes](https://x.com/meimakes)
 
 
 <img width="946" height="519" alt="image" src="https://github.com/user-attachments/assets/a957eac1-a42c-44b5-96a0-21b5253b4b34" />
@@ -27,7 +27,7 @@ Nada é nunca um erro. Cada tecla pressionada é uma vitória.
 
 ## Como usar
 
-Abra o arquivo `index.html` em qualquer navegador. É só isso.
+Abra o arquivo `index.html` em qualquer navegador. É isso. Só isso/
 
 Funciona no computador e no celular. Suporta modo claro e escuro (segue a preferência do sistema).
 
@@ -81,7 +81,7 @@ Funciona no computador e no celular. Suporta modo claro e escuro (segue a prefer
 
 ## Mais como este
 
-Eu criei o terminalzinho como parte do ensino de pensamento computacional para minha criança de 3 anos através da brincadeira. Escrevi um currículo completo sobre isso — [12 Weeks of Tech Projects to Build With Your Kid](https://shop.raisingpixels.dev/l/12-weeks-tech-projects). 60 atividades, principalmente desplugadas, para idades de 2 a 6 anos.
+[@meimakes](https://x.com/meimakes) criou o tiny-terminal como parte do ensino de pensamento computacional para seu filho de 3 anos através da brincadeira. Ela escreveu um currículo completo sobre isso — [12 Weeks of Tech Projects to Build With Your Kid](https://shop.raisingpixels.dev/l/12-weeks-tech-projects). 60 atividades, principalmente desplugadas, para idades de 2 a 6 anos.
 
 ## Licença
 
