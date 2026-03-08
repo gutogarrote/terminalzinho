@@ -386,8 +386,56 @@ async function countUpAnimation(target) {
   scrollToBottom();
 }
 
+// Termos pessoais da Nina
+const personal = {
+  'nina':      { label: '✨ NINA! ✨',         emojis: '👧🏼💙💛💙👧🏼',  color: 'rainbow', special: 'nina' },
+  'papai':     { label: 'PAPAI! 👨‍👧',          emojis: '❤️🦁❤️🦁❤️',    color: 'magic' },
+  'guto':      { label: 'PAPAI GUTO! 👨‍👧',     emojis: '❤️🦁❤️🦁❤️',    color: 'magic' },
+  'mamae':     { label: 'MAMÃE! 👩‍👧',          emojis: '💗🌸💗🌸💗',    color: 'pink' },
+  'mamãe':     { label: 'MAMÃE! 👩‍👧',          emojis: '💗🌸💗🌸💗',    color: 'pink' },
+  'carol':     { label: 'MAMÃE CAROL! 👩‍👧',    emojis: '💗🌸💗🌸💗',    color: 'pink' },
+  'carolina':  { label: 'MAMÃE CAROLINA! 👩‍👧', emojis: '💗🌸💗🌸💗',    color: 'pink' },
+  'marcia':    { label: 'VOVÓ MÁRCIA! 👵',     emojis: '💕🌺💕🌺💕',    color: 'pink' },
+  'márcia':    { label: 'VOVÓ MÁRCIA! 👵',     emojis: '💕🌺💕🌺💕',    color: 'pink' },
+  'graca':     { label: 'VOVÓ GRAÇA! 👵',      emojis: '💕🌸💕🌸💕',    color: 'pink' },
+  'graça':     { label: 'VOVÓ GRAÇA! 👵',      emojis: '💕🌸💕🌸💕',    color: 'pink' },
+  'celso':     { label: 'VOVÔ CELSO! 👴',      emojis: '💙⭐💙⭐💙',    color: 'teal' },
+  'carlos':    { label: 'VOVÔ CARLOS! 👴',     emojis: '💙🌟💙🌟💙',    color: 'teal' },
+  'vovo':      { label: 'VOVÓ / VOVÔ! 👵👴',  emojis: '💕💙💕💙💕',    color: 'magic' },
+  'vovó':      { label: 'VOVÓ! 👵',            emojis: '💕🌺💕🌺💕',    color: 'pink' },
+  'vovô':      { label: 'VOVÔ! 👴',            emojis: '💙⭐💙⭐💙',    color: 'teal' },
+};
+
+async function ninaAnimation() {
+  const frames = [
+    '✨',
+    '✨💙',
+    '✨💙💛',
+    '✨💙💛✨',
+    '✨💙💛✨💙',
+    '✨💙💛✨💙💛',
+    '✨💙💛✨💙💛✨',
+    '👧🏼💙💛✨💙💛✨',
+    '👧🏼💙💛✨💙💛✨💙',
+    '👧🏼💙💛✨💙💛✨💙💛',
+    '👧🏼💙💛✨💙💛✨💙💛✨',
+    '👧🏼💙💛✨💙💛✨💙💛✨👧🏼',
+    '👧🏼💙💛✨💙💛✨💙💛✨💙👧🏼',
+    '👧🏼💙💛✨💙💛✨💙💛✨💙💛👧🏼',
+    '👧🏼💙💛✨💙💛✨💙💛✨💙💛✨👧🏼',
+  ];
+  const div = document.createElement('div');
+  div.className = 'output emoji-big celebration';
+  terminal.appendChild(div);
+  for (const frame of frames) {
+    div.textContent = frame;
+    scrollToBottom();
+    await new Promise(r => setTimeout(r, 110));
+  }
+}
+
 function isKnownWord(lower) {
-  return animals[lower] || vehicles[lower] || colors[lower] ||
+  return animals[lower] || vehicles[lower] || colors[lower] || personal[lower] ||
     ['help', 'ajuda',
      'joke', 'jokes', 'funny', 'piada', 'piadas', 'engracado', 'engraçado',
      'dance', 'danca', 'dança', 'party', 'festa',
@@ -507,6 +555,21 @@ async function handleCommand(raw) {
     gibberishCount = 0;
     const c = colors[lower];
     addOutput(`<span class="emoji-big">${c.things}</span>`, 'celebration');
+    scrollToBottom(); return;
+  }
+
+  // Termos pessoais especiais
+  if (personal[lower]) {
+    gibberishCount = 0;
+    const p = personal[lower];
+    if (p.special === 'nina') {
+      addOutput(`<span class="rainbow giant">${p.label}</span>`, 'celebration');
+      await ninaAnimation();
+      addOutput('💙 que nome lindo! 💙', 'info');
+    } else {
+      addOutput(`<span class="rainbow giant">${p.label}</span>`, 'celebration');
+      addOutput(`<span class="emoji-big">${p.emojis}</span>`, 'celebration');
+    }
     scrollToBottom(); return;
   }
 
