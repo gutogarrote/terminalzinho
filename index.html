@@ -98,7 +98,12 @@
   .output.pink { color: var(--pink); }
 
   .input-line { display: flex; align-items: center; clear: both; }
-  .input-line .prompt { color: var(--prompt); font-weight: bold; }
+
+  @keyframes promptPulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+  .input-line .prompt { color: var(--prompt); font-weight: bold; animation: promptPulse 2s ease-in-out infinite; }
 
   #input {
     background: none;
@@ -109,7 +114,15 @@
     outline: none;
     flex: 1;
     caret-color: var(--prompt);
+    text-transform: uppercase;
   }
+
+  @keyframes terminalFlash {
+    0%   { background: var(--bg); }
+    30%  { background: color-mix(in srgb, var(--green) 20%, var(--bg)); }
+    100% { background: var(--bg); }
+  }
+  .flash { animation: terminalFlash 0.4s ease-out; }
 
   .emoji-big { font-size: 32px; line-height: 1.4; }
   .emoji-flood { font-size: 24px; line-height: 1.3; word-break: break-all; }
@@ -285,10 +298,23 @@ colors['white']   = colors['branco'];
 colors['brown']   = colors['marrom'];
 
 const letterAnimals = {
-  'a':'🐊','b':'🦋','c':'🐱','d':'🐶','e':'🐘','f':'🐸','g':'🦒','h':'🐴',
-  'i':'🦎','j':'🪼','k':'🦘','l':'🦁','m':'🐵','n':'🦑','o':'🦉','p':'🐧',
-  'q':'👸','r':'🐰','s':'🐍','t':'🐢','u':'🦄','v':'🌋','w':'🐋','x':'🎸',
+  'a':'✈️','b':'⚽','c':'🐶','d':'🎲','e':'🐘','f':'🔥','g':'🐱','h':'🍔',
+  'i':'🧊','j':'🐊','k':'🥝','l':'🦁','m':'🐵','n':'☁️','o':'🥚','p':'🦆',
+  'q':'🧀','r':'🐭','s':'🐸','t':'🚂','u':'🐻','v':'🐄','w':'🧇','x':'☕',
   'y':'🪀','z':'🦓',
+};
+
+const letterWords = {
+  'a':'AVIÃO','b':'BOLA','c':'CACHORRO','d':'DADO','e':'ELEFANTE',
+  'f':'FOGO','g':'GATO','h':'HAMBÚRGUER','i':'IGLU','j':'JACARÉ',
+  'k':'KIWI','l':'LEÃO','m':'MACACO','n':'NUVEM','o':'OVO',
+  'p':'PATO','q':'QUEIJO','r':'RATO','s':'SAPO','t':'TREM',
+  'u':'URSO','v':'VACA','w':'WAFFLE','x':'XÍCARA','y':'YOYO','z':'ZEBRA',
+};
+
+const numberWords = {
+  1:'UM', 2:'DOIS', 3:'TRÊS', 4:'QUATRO', 5:'CINCO',
+  6:'SEIS', 7:'SETE', 8:'OITO', 9:'NOVE', 10:'DEZ',
 };
 
 const numberComparisons = {
@@ -347,7 +373,7 @@ function randomEmoji(n) {
 function addLine(prompt, cmd) {
   const div = document.createElement('div');
   div.className = 'line';
-  div.innerHTML = `<span class="prompt">${prompt}</span><span class="cmd">${cmd}</span>`;
+  div.innerHTML = `<span class="prompt">${prompt}</span><span class="cmd">${cmd.toUpperCase()}</span>`;
   terminal.appendChild(div);
 }
 
@@ -501,8 +527,10 @@ async function handleCommand(raw) {
   if (lower.length === 1 && /[a-z]/.test(lower)) {
     gibberishCount = 0;
     const upper = lower.toUpperCase();
-    const animal = letterAnimals[lower] || '✨';
-    addOutput(`<span class="rainbow giant">${upper}</span>  ${animal}`, 'celebration');
+    const emoji = letterAnimals[lower] || '✨';
+    const word  = letterWords[lower] || '';
+    addOutput(`<span class="rainbow giant">${upper}</span>  ${emoji}`, 'celebration');
+    if (word) addOutput(`<span style="font-size:20px;font-weight:bold;letter-spacing:2px">${upper} DE ${word}</span>`, 'info');
     scrollToBottom(); return;
   }
 
@@ -518,6 +546,7 @@ async function handleCommand(raw) {
     if (n <= 10) {
       const emoji = allEmoji[Math.floor(Math.random() * allEmoji.length)];
       addOutput(`${emoji.repeat(n)}`, 'celebration');
+      if (numberWords[n]) addOutput(`<span class="giant">${numberWords[n]}</span>`, 'success');
     } else if (n <= 100) {
       const comp = numberComparisons[n];
       const emoji = allEmoji[Math.floor(Math.random() * allEmoji.length)];
@@ -697,14 +726,21 @@ const inputEl = document.createElement('input');
 inputEl.type = 'text';
 inputEl.id = 'input';
 inputEl.autocomplete = 'off';
-inputEl.autocapitalize = 'off';
+inputEl.autocapitalize = 'characters';
 inputEl.spellcheck = false;
-inputEl.style.cssText = 'background:none;border:none;color:var(--text);font-family:"JetBrains Mono",monospace;font-size:16px;outline:none;flex:1;caret-color:var(--prompt);';
+inputEl.style.cssText = 'background:none;border:none;color:var(--text);font-family:"JetBrains Mono",monospace;font-size:16px;outline:none;flex:1;caret-color:var(--prompt);text-transform:uppercase;';
 inputLine.appendChild(inputEl);
 terminal.appendChild(inputLine);
 
 inputEl.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') { handleCommand(inputEl.value); inputEl.value = ''; }
+  if (e.key === 'Enter') {
+    terminal.classList.remove('flash');
+    void terminal.offsetWidth;
+    terminal.classList.add('flash');
+    terminal.addEventListener('animationend', () => terminal.classList.remove('flash'), { once: true });
+    handleCommand(inputEl.value);
+    inputEl.value = '';
+  }
 });
 document.addEventListener('click', () => inputEl.focus());
 inputEl.focus();
