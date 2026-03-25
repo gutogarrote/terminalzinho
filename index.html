@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tiny Terminal 🖥️</title>
+<title>Terminalzinho 🖥️</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
 
@@ -98,7 +98,12 @@
   .output.pink { color: var(--pink); }
 
   .input-line { display: flex; align-items: center; clear: both; }
-  .input-line .prompt { color: var(--prompt); font-weight: bold; }
+
+  @keyframes promptPulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+  .input-line .prompt { color: var(--prompt); font-weight: bold; animation: promptPulse 2s ease-in-out infinite; }
 
   #input {
     background: none;
@@ -109,7 +114,15 @@
     outline: none;
     flex: 1;
     caret-color: var(--prompt);
+    text-transform: uppercase;
   }
+
+  @keyframes terminalFlash {
+    0%   { background: var(--bg); }
+    30%  { background: color-mix(in srgb, var(--green) 20%, var(--bg)); }
+    100% { background: var(--bg); }
+  }
+  .flash { animation: terminalFlash 0.4s ease-out; }
 
   .emoji-big { font-size: 32px; line-height: 1.4; }
   .emoji-flood { font-size: 24px; line-height: 1.3; word-break: break-all; }
@@ -145,7 +158,7 @@
     <div class="dot yellow"></div>
     <div class="dot green"></div>
   </div>
-  <div class="title">tiny terminal</div>
+  <div class="title">terminalzinho</div>
 </div>
 
 <div class="terminal" id="terminal">
@@ -154,8 +167,6 @@
 <script>
 (function() {
   const t = document.getElementById('terminal');
-  const animalKeys = Object.keys(window._animals || {});
-  // Will be populated after animals object is defined
   window._showWelcome = function() {
     const emoji = ['🚀','🦕','🐱','🔥','⭐','🌈','💎','🎸','🦞','🐙','🎪','🌸','🍕','🎯','🐋','🦋','🌊','🎵','🍭','🐲','👾','🪐','🦈','🌻','🎨','🐸','🏀','🦄','🎃','🐧'];
     let row = '';
@@ -176,88 +187,165 @@ let pendingChallenge = null;
 
 const allEmoji = ['🚀','🦕','🐱','🔥','⭐','🌈','💎','🎸','🦞','🐙','🎪','🌸','🍕','🎯','🐋','🦋','🌊','🎵','🍭','🐲','👾','🪐','🦈','🌻','🎨','🐸','🏀','🧲','🦄','🎃','🐧','🎺','🌮','🦊','🔮','🎠','🐢','⚡','🍩','🎈'];
 
+// Animais — nomes em português como chaves primárias
 const animals = {
-  'cat':       { emoji: '🐱', art: '  /\\_/\\\n ( o.o )\n  > ^ <', sound: 'Meow!' },
-  'dog':       { emoji: '🐶', art: '  / \\__\n (    @\\___\n  /         O\n /   (_____/\n/_____/', sound: 'Woof woof!' },
-  'fish':      { emoji: '🐟', art: '  ><(((°>', sound: 'Blub blub!' },
-  'bird':      { emoji: '🐦', art: '   ,_,\n  (O,O)\n  /)  )\n --"-"--', sound: 'Tweet tweet!' },
-  'snake':     { emoji: '🐍', art: '  ~~~~~sssss\n /     \\\n|  o  o |\n \\  ~  /', sound: 'Hissssss!' },
-  'frog':      { emoji: '🐸', art: '  @..@\n (----)\n( >__< )', sound: 'Ribbit!' },
-  'cow':       { emoji: '🐄', art: '  (___)\n  (o o)\n /  |  \\', sound: 'Mooooo!' },
-  'pig':       { emoji: '🐷', art: '  ^  ^\n (o  o)\n  (oo)', sound: 'Oink oink!' },
-  'duck':      { emoji: '🦆', art: '    _\n  <(o )___\n   ( ._> /\n    `---\'', sound: 'Quack quack!' },
-  'shark':     { emoji: '🦈', art: '     |\\\n     |  \\\n     |   \\______\n ~~~~|          |~~~~\n     |   /------\n     |  /', sound: 'Dun dun...' },
-  'dinosaur':  { emoji: '🦕', art: '            __\n           / _)\n    _.----._/ /\n   /         /\n _/ (  | (  |\n/__.-\'|_|--|_|', sound: 'ROARRR!' },
-  'lobster':   { emoji: '🦞', art: ' \\/\\_/\\_/\\/\n  \\_   _/\n  (|o o|)\n   |   |\n  /|   |\\', sound: 'Click click!' },
-  'elephant':  { emoji: '🐘', art: '    ___\n   /   \\\n  | o o |\n   \\   /----,\n    | |      \\', sound: 'PHHHRRRRT!' },
-  'monkey':    { emoji: '🐵', art: '  .-"-.  \n /  o o \\\n|   <   |\n \\  ~  /', sound: 'Ooh ooh aah aah!' },
-  'bear':      { emoji: '🐻', art: ' ʕ •ᴥ• ʔ', sound: 'Grrr!' },
-  'rabbit':    { emoji: '🐰', art: ' (\\_/)\n ( •.•)\n />🥕', sound: 'Hop hop!' },
-  'owl':       { emoji: '🦉', art: '  ,_,\n (O,O)\n(  V  )\n  ^ ^', sound: 'Hoo hoo!' },
-  'turtle':    { emoji: '🐢', art: '    _____\n  .\'     `.\n /  o   o  \\\n|     <     |\n \\  \\___/  /\n  `._____,\'', sound: 'Slow and steady!' },
-  'penguin':   { emoji: '🐧', art: '   (o)\n  /| |\\\n _| | |_', sound: 'Waddle waddle!' },
-  'lion':      { emoji: '🦁', art: '  /----- \\\n /  o   o  \\\n|    <>    |\n \\  ____  /\n  \\ \\  / /', sound: 'ROARRR!' },
+  'gato':       { emoji: '🐱', art: '  /\\_/\\\n ( o.o )\n  > ^ <', sound: 'Miau!' },
+  'cachorro':   { emoji: '🐶', art: '  / \\__\n (    @\\___\n  /         O\n /   (_____/\n/_____/', sound: 'Au au!' },
+  'peixe':      { emoji: '🐟', art: '  ><(((°>', sound: 'Blub blub!' },
+  'passaro':    { emoji: '🐦', art: '   ,_,\n  (O,O)\n  /)  )\n --"-"--', sound: 'Piu piu!' },
+  'cobra':      { emoji: '🐍', art: '  ~~~~~sssss\n /     \\\n|  o  o |\n \\  ~  /', sound: 'Sssssss!' },
+  'sapo':       { emoji: '🐸', art: '  @..@\n (----)\n( >__< )', sound: 'Coax coax!' },
+  'vaca':       { emoji: '🐄', art: '  (___)\n  (o o)\n /  |  \\', sound: 'Muuu!' },
+  'porco':      { emoji: '🐷', art: '  ^  ^\n (o  o)\n  (oo)', sound: 'Oinc oinc!' },
+  'pato':       { emoji: '🦆', art: '    _\n  <(o )___\n   ( ._> /\n    `---\'', sound: 'Qua qua!' },
+  'tubarao':    { emoji: '🦈', art: '     |\\\n     |  \\\n     |   \\______\n ~~~~|          |~~~~\n     |   /------\n     |  /', sound: 'Dun dun...' },
+  'dinossauro': { emoji: '🦕', art: '            __\n           / _)\n    _.----._/ /\n   /         /\n _/ (  | (  |\n/__.-\'|_|--|_|', sound: 'ROAARRR!' },
+  'lagosta':    { emoji: '🦞', art: ' \\/\\_/\\_/\\/\n  \\_   _/\n  (|o o|)\n   |   |\n  /|   |\\', sound: 'Clic clic!' },
+  'elefante':   { emoji: '🐘', art: '    ___\n   /   \\\n  | o o |\n   \\   /----,\n    | |      \\', sound: 'Paarrr!' },
+  'macaco':     { emoji: '🐵', art: '  .-"-.  \n /  o o \\\n|   <   |\n \\  ~  /', sound: 'Ui ui ah ah!' },
+  'urso':       { emoji: '🐻', art: ' ʕ •ᴥ• ʔ', sound: 'Grrr!' },
+  'coelho':     { emoji: '🐰', art: ' (\\_/)\n ( •.•)\n />🥕', sound: 'Pula pula!' },
+  'coruja':     { emoji: '🦉', art: '  ,_,\n (O,O)\n(  V  )\n  ^ ^', sound: 'Hu hu!' },
+  'tartaruga':  { emoji: '🐢', art: '    _____\n  .\'     `.\n /  o   o  \\\n|     <     |\n \\  \\___/  /\n  `._____,\'', sound: 'Devagar e sempre!' },
+  'pinguim':    { emoji: '🐧', art: '   (o)\n  /| |\\\n _| | |_', sound: 'Troc troc!' },
+  'leao':       { emoji: '🦁', art: '  /----- \\\n /  o   o  \\\n|    <>    |\n \\  ____  /\n  \\ \\  / /', sound: 'ROAARRR!' },
 };
 
+// Aliases em inglês e variações com acento
+animals['cat']       = animals['gato'];
+animals['dog']       = animals['cachorro'];
+animals['fish']      = animals['peixe'];
+animals['bird']      = animals['passaro'];
+animals['pássaro']   = animals['passaro'];
+animals['snake']     = animals['cobra'];
+animals['frog']      = animals['sapo'];
+animals['cow']       = animals['vaca'];
+animals['pig']       = animals['porco'];
+animals['duck']      = animals['pato'];
+animals['shark']     = animals['tubarao'];
+animals['tubarão']   = animals['tubarao'];
+animals['dinosaur']  = animals['dinossauro'];
+animals['lobster']   = animals['lagosta'];
+animals['elephant']  = animals['elefante'];
+animals['monkey']    = animals['macaco'];
+animals['bear']      = animals['urso'];
+animals['rabbit']    = animals['coelho'];
+animals['owl']       = animals['coruja'];
+animals['turtle']    = animals['tartaruga'];
+animals['penguin']   = animals['pinguim'];
+animals['lion']      = animals['leao'];
+animals['leão']      = animals['leao'];
+
+// Veículos — nomes em português como chaves primárias
 const vehicles = {
-  'airplane':    { emoji: '✈️', art: '         __|__\n  --o--o--(_)--o--o--', sound: 'WHOOOOSH!' },
-  'plane':       { emoji: '✈️', art: '         __|__\n  --o--o--(_)--o--o--', sound: 'WHOOOOSH!' },
-  'truck':       { emoji: '🚛', art: '    ___________\n   |  _  _  _  |___\n   |  TRUCK!   |   |\n   |___________|___|\n    (O)         (O)', sound: 'VROOM VROOM!' },
-  'excavator':   { emoji: '🏗️', art: '     ___\n    /   \\-----.\n   |  O  |     \\\n    \\___/  _   |\n   [XXXXX]|_|_/', sound: 'DIG DIG DIG!' },
-  'rocket':      { emoji: '🚀', art: '      /\\\n     /  \\\n    | 🚀 |\n    |    |\n   /|    |\\\n   🔥🔥🔥', sound: '3... 2... 1... BLAST OFF!' },
-  'train':       { emoji: '🚂', art: '   __    __    __\n  |==|  |==|  |==|\n __|  |__|  |__|  |__\n|   CHOO CHOO!      |\n|___________________|\n  (O)    (O)    (O)', sound: 'CHOO CHOO!' },
-  'helicopter':  { emoji: '🚁', art: '   ---+---\n      |\n   .--\'--.\n  / o   o \\\n  \\_______/', sound: 'WHOP WHOP WHOP!' },
-  'bulldozer':   { emoji: '🚜', art: '  _________\n |  PUSH!  |____\n |_________|    |\n   (O)     (O)', sound: 'BEEP BEEP BEEP!' },
-  'crane':       { emoji: '🏗️', art: '   |\n   |______\n   |      \\---[HOOK]\n   | CRANE|\n   |______|', sound: 'LIFTING!' },
-  'boat':        { emoji: '⛵', art: '      |\n     /|\\\n    / | \\\n ~~~~~~~~~~~', sound: 'Splashhh!' },
-  'car':         { emoji: '🚗', art: '    ______\n   /|_||_\\`.__\n  (   _    _ _\\\n  =`-(_)--(_)-\'', sound: 'Beep beep!' },
-  'bus':         { emoji: '🚌', art: '  ______________\n |  BUS!  [] [] |\n |_____________|\n   (O)      (O)', sound: 'All aboard!' },
+  'aviao':       { emoji: '✈️', art: '         __|__\n  --o--o--(_)--o--o--', sound: 'VUUUUU!' },
+  'caminhao':    { emoji: '🚛', art: '    ___________\n   |  _  _  _  |___\n   | CAMINHÃO! |   |\n   |___________|___|\n    (O)         (O)', sound: 'VRUMMM VRUMMM!' },
+  'escavadeira': { emoji: '🏗️', art: '     ___\n    /   \\-----.\n   |  O  |     \\\n    \\___/  _   |\n   [XXXXX]|_|_/', sound: 'CAVA CAVA CAVA!' },
+  'foguete':     { emoji: '🚀', art: '      /\\\n     /  \\\n    | 🚀 |\n    |    |\n   /|    |\\\n   🔥🔥🔥', sound: '3... 2... 1... DECOLAR!' },
+  'trem':        { emoji: '🚂', art: '   __    __    __\n  |==|  |==|  |==|\n __|  |__|  |__|  |__\n|      TU  TU!       |\n|___________________|\n  (O)    (O)    (O)', sound: 'TU TU!' },
+  'helicoptero': { emoji: '🚁', art: '   ---+---\n      |\n   .--\'--.\n  / o   o \\\n  \\_______/', sound: 'TRUM TRUM TRUM!' },
+  'trator':      { emoji: '🚜', art: '  _________\n | EMPURRA! |____\n |_________|    |\n   (O)     (O)', sound: 'BIP BIP BIP!' },
+  'guindaste':   { emoji: '🏗️', art: '   |\n   |______\n   |      \\---[GANCHO]\n   |GUINDASTE|\n   |______|', sound: 'IÇANDO!' },
+  'barco':       { emoji: '⛵', art: '      |\n     /|\\\n    / | \\\n ~~~~~~~~~~~', sound: 'Splashhh!' },
+  'carro':       { emoji: '🚗', art: '    ______\n   /|_||_\\`.__\n  (   _    _ _\\\n  =`-(_)--(_)-\'', sound: 'Bip bip!' },
+  'onibus':      { emoji: '🚌', art: '  ______________\n | ÔNIBUS! [] [] |\n |_____________|\n   (O)      (O)', sound: 'Todos a bordo!' },
 };
 
+// Aliases em inglês e variações com acento
+vehicles['airplane']    = vehicles['aviao'];
+vehicles['plane']       = vehicles['aviao'];
+vehicles['avião']       = vehicles['aviao'];
+vehicles['truck']       = vehicles['caminhao'];
+vehicles['caminhão']    = vehicles['caminhao'];
+vehicles['excavator']   = vehicles['escavadeira'];
+vehicles['rocket']      = vehicles['foguete'];
+vehicles['train']       = vehicles['trem'];
+vehicles['helicopter']  = vehicles['helicoptero'];
+vehicles['helicóptero'] = vehicles['helicoptero'];
+vehicles['bulldozer']   = vehicles['trator'];
+vehicles['crane']       = vehicles['guindaste'];
+vehicles['boat']        = vehicles['barco'];
+vehicles['car']         = vehicles['carro'];
+vehicles['bus']         = vehicles['onibus'];
+vehicles['ônibus']      = vehicles['onibus'];
+
+// Cores — nomes em português como chaves primárias
 const colors = {
-  'red':    { emoji: '🔴', things: '🍎 🚒 🌹 ❤️ 🍓' },
-  'blue':   { emoji: '🔵', things: '🌊 🦋 🫐 💎 🐳' },
-  'green':  { emoji: '🟢', things: '🌿 🐸 🥒 🌲 🐢' },
-  'yellow': { emoji: '🟡', things: '⭐ 🌻 🍋 🐤 ☀️' },
-  'orange': { emoji: '🟠', things: '🍊 🥕 🦊 🎃 🏀' },
-  'purple': { emoji: '🟣', things: '🍇 🦄 🔮 👾 🌸' },
-  'pink':   { emoji: '💗', things: '🌸 🦩 🍧 💝 🎀' },
-  'black':  { emoji: '⚫', things: '🐈‍⬛ 🕷️ 🌑 🎱 🦇' },
-  'white':  { emoji: '⚪', things: '☁️ ⛄ 🕊️ 🥚 🦢' },
-  'brown':  { emoji: '🟤', things: '🐻 🍫 🌰 🐿️ 🏈' },
+  'vermelho': { emoji: '🔴', things: '🍎 🚒 🌹 ❤️ 🍓' },
+  'azul':     { emoji: '🔵', things: '🌊 🦋 🫐 💎 🐳' },
+  'verde':    { emoji: '🟢', things: '🌿 🐸 🥒 🌲 🐢' },
+  'amarelo':  { emoji: '🟡', things: '⭐ 🌻 🍋 🐤 ☀️' },
+  'laranja':  { emoji: '🟠', things: '🍊 🥕 🦊 🎃 🏀' },
+  'roxo':     { emoji: '🟣', things: '🍇 🦄 🔮 👾 🌸' },
+  'rosa':     { emoji: '💗', things: '🌸 🦩 🍧 💝 🎀' },
+  'preto':    { emoji: '⚫', things: '🐈‍⬛ 🕷️ 🌑 🎱 🦇' },
+  'branco':   { emoji: '⚪', things: '☁️ ⛄ 🕊️ 🥚 🦢' },
+  'marrom':   { emoji: '🟤', things: '🐻 🍫 🌰 🐿️ 🏈' },
 };
+
+// Aliases em inglês e variações
+colors['red']     = colors['vermelho'];
+colors['blue']    = colors['azul'];
+colors['green']   = colors['verde'];
+colors['yellow']  = colors['amarelo'];
+colors['orange']  = colors['laranja'];
+colors['purple']  = colors['roxo'];
+colors['violet']  = colors['roxo'];
+colors['violeta'] = colors['roxo'];
+colors['pink']    = colors['rosa'];
+colors['black']   = colors['preto'];
+colors['white']   = colors['branco'];
+colors['brown']   = colors['marrom'];
 
 const letterAnimals = {
-  'a':'🐊','b':'🦋','c':'🐱','d':'🐶','e':'🐘','f':'🐸','g':'🦒','h':'🐴',
-  'i':'🦎','j':'🪼','k':'🦘','l':'🦁','m':'🐵','n':'🦑','o':'🦉','p':'🐧',
-  'q':'👸','r':'🐰','s':'🐍','t':'🐢','u':'🦄','v':'🌋','w':'🐋','x':'🎸',
+  'a':'✈️','b':'⚽','c':'🐶','d':'🎲','e':'🐘','f':'🔥','g':'🐱','h':'🍔',
+  'i':'🧊','j':'🐊','k':'🥝','l':'🦁','m':'🐵','n':'☁️','o':'🥚','p':'🦆',
+  'q':'🧀','r':'🐭','s':'🐸','t':'🚂','u':'🐻','v':'🐄','w':'🧇','x':'☕',
   'y':'🪀','z':'🦓',
 };
 
-const numberComparisons = {
-  20: "That's how many fingers AND toes you have! 🖐️🦶",
-  50: "That's a half dollar! 🪙",
-  100: "That's how many toes 10 people have! 🦶×10",
-  365: "That's how many days in a year! 📅",
-  999: "Almost a THOUSAND! 😱",
+const letterWords = {
+  'a':'AVIÃO','b':'BOLA','c':'CACHORRO','d':'DADO','e':'ELEFANTE',
+  'f':'FOGO','g':'GATO','h':'HAMBÚRGUER','i':'IGLU','j':'JACARÉ',
+  'k':'KIWI','l':'LEÃO','m':'MACACO','n':'NUVEM','o':'OVO',
+  'p':'PATO','q':'QUEIJO','r':'RATO','s':'SAPO','t':'TREM',
+  'u':'URSO','v':'VACA','w':'WAFFLE','x':'XÍCARA','y':'YOYO','z':'ZEBRA',
 };
 
+const numberWords = {
+  1:'UM', 2:'DOIS', 3:'TRÊS', 4:'QUATRO', 5:'CINCO',
+  6:'SEIS', 7:'SETE', 8:'OITO', 9:'NOVE', 10:'DEZ',
+};
+
+const numberComparisons = {
+  20:  'São quantos dedos das mãos e dos pés você tem! 🖐️🦶',
+  50:  'Metade de 100! 🪙',
+  100: 'São quantos dedos dos pés têm 10 pessoas! 🦶×10',
+  365: 'São quantos dias tem um ano! 📅',
+  999: 'Quase MIL! 😱',
+};
+
+// Listas para exibição (somente nomes em português)
+const ptAnimalNames = ['gato','cachorro','peixe','passaro','cobra','sapo','vaca','porco','pato','tubarao','dinossauro','lagosta','elefante','macaco','urso','coelho','coruja','tartaruga','pinguim','leao'];
+const ptVehicleNames = ['aviao','caminhao','escavadeira','foguete','trem','helicoptero','trator','guindaste','barco','carro','onibus'];
+const ptColorNames = ['vermelho','azul','verde','amarelo','laranja','roxo','rosa','preto','branco','marrom'];
+
 const challenges = [
-  { prompt: '🐱', answer: 'cat', hint: 'what animal is this?' },
-  { prompt: '🐶', answer: 'dog', hint: 'what animal is this?' },
-  { prompt: '🐸', answer: 'frog', hint: 'what animal is this?' },
-  { prompt: '🐍', answer: 'snake', hint: 'what animal is this?' },
-  { prompt: '🦞', answer: 'lobster', hint: 'what animal is this?' },
-  { prompt: '🚀', answer: 'rocket', hint: 'what is this?' },
-  { prompt: '✈️', answer: ['airplane','plane'], hint: 'what is this?' },
-  { prompt: '🚛', answer: 'truck', hint: 'what is this?' },
-  { prompt: '🔴', answer: 'red', hint: 'what color?' },
-  { prompt: '🔵', answer: 'blue', hint: 'what color?' },
-  { prompt: '🟢', answer: 'green', hint: 'what color?' },
-  { prompt: '🟡', answer: 'yellow', hint: 'what color?' },
-  { prompt: '🐟🐟🐟', answer: '3', hint: 'how many fish?' },
-  { prompt: '⭐⭐⭐⭐⭐', answer: '5', hint: 'how many stars?' },
-  { prompt: '🍎🍎', answer: '2', hint: 'how many apples?' },
+  { prompt: '🐱', answer: ['cat','gato'], hint: 'que animal é esse?' },
+  { prompt: '🐶', answer: ['dog','cachorro'], hint: 'que animal é esse?' },
+  { prompt: '🐸', answer: ['frog','sapo'], hint: 'que animal é esse?' },
+  { prompt: '🐍', answer: ['snake','cobra'], hint: 'que animal é esse?' },
+  { prompt: '🦞', answer: ['lobster','lagosta'], hint: 'que animal é esse?' },
+  { prompt: '🚀', answer: ['rocket','foguete'], hint: 'o que é isso?' },
+  { prompt: '✈️', answer: ['airplane','plane','aviao','avião'], hint: 'o que é isso?' },
+  { prompt: '🚛', answer: ['truck','caminhao','caminhão'], hint: 'o que é isso?' },
+  { prompt: '🔴', answer: ['red','vermelho'], hint: 'que cor é essa?' },
+  { prompt: '🔵', answer: ['blue','azul'], hint: 'que cor é essa?' },
+  { prompt: '🟢', answer: ['green','verde'], hint: 'que cor é essa?' },
+  { prompt: '🟡', answer: ['yellow','amarelo'], hint: 'que cor é essa?' },
+  { prompt: '🐟🐟🐟', answer: ['3'], hint: 'quantos peixes?' },
+  { prompt: '⭐⭐⭐⭐⭐', answer: ['5'], hint: 'quantas estrelas?' },
+  { prompt: '🍎🍎', answer: ['2'], hint: 'quantas maçãs?' },
 ];
 
 function makeCreature(letters) {
@@ -285,7 +373,7 @@ function randomEmoji(n) {
 function addLine(prompt, cmd) {
   const div = document.createElement('div');
   div.className = 'line';
-  div.innerHTML = `<span class="prompt">${prompt}</span><span class="cmd">${cmd}</span>`;
+  div.innerHTML = `<span class="prompt">${prompt}</span><span class="cmd">${cmd.toUpperCase()}</span>`;
   terminal.appendChild(div);
 }
 
@@ -315,20 +403,79 @@ async function countUpAnimation(target) {
   let current = 0;
   for (let i = 0; i < steps; i++) {
     current = Math.min(current + increment, target);
-    div.textContent = current.toLocaleString();
+    div.textContent = current.toLocaleString('pt-BR');
     scrollToBottom();
     await new Promise(r => setTimeout(r, 60));
   }
-  div.textContent = target.toLocaleString() + ' !';
+  div.textContent = target.toLocaleString('pt-BR') + ' !';
   addOutput(randomEmoji(15), 'emoji-flood celebration');
   scrollToBottom();
 }
 
+// Termos pessoais da Nina
+const personal = {
+  'nina':      { label: '✨ NINA! ✨',         emojis: '👧🏼💙💛💙👧🏼',  color: 'rainbow', special: 'nina' },
+  'papai':     { label: 'PAPAI! 👨‍👧',          emojis: '❤️🦁❤️🦁❤️',    color: 'magic' },
+  'guto':      { label: 'PAPAI GUTO! 👨‍👧',     emojis: '❤️🦁❤️🦁❤️',    color: 'magic' },
+  'mamae':     { label: 'MAMÃE! 👩‍👧',          emojis: '💗🌸💗🌸💗',    color: 'pink' },
+  'mamãe':     { label: 'MAMÃE! 👩‍👧',          emojis: '💗🌸💗🌸💗',    color: 'pink' },
+  'carol':     { label: 'MAMÃE CAROL! 👩‍👧',    emojis: '💗🌸💗🌸💗',    color: 'pink' },
+  'carolina':  { label: 'MAMÃE CAROLINA! 👩‍👧', emojis: '💗🌸💗🌸💗',    color: 'pink' },
+  'marcia':    { label: 'VOVÓ MÁRCIA! 👵',     emojis: '💕🌺💕🌺💕',    color: 'pink' },
+  'márcia':    { label: 'VOVÓ MÁRCIA! 👵',     emojis: '💕🌺💕🌺💕',    color: 'pink' },
+  'graca':     { label: 'VOVÓ GRAÇA! 👵',      emojis: '💕🌸💕🌸💕',    color: 'pink' },
+  'graça':     { label: 'VOVÓ GRAÇA! 👵',      emojis: '💕🌸💕🌸💕',    color: 'pink' },
+  'celso':     { label: 'VOVÔ CELSO! 👴',      emojis: '💙⭐💙⭐💙',    color: 'teal' },
+  'carlos':    { label: 'VOVÔ CARLOS! 👴',     emojis: '💙🌟💙🌟💙',    color: 'teal' },
+  'vovo':      { label: 'VOVÓ / VOVÔ! 👵👴',  emojis: '💕💙💕💙💕',    color: 'magic' },
+  'vovó':      { label: 'VOVÓ! 👵',            emojis: '💕🌺💕🌺💕',    color: 'pink' },
+  'vovô':      { label: 'VOVÔ! 👴',            emojis: '💙⭐💙⭐💙',    color: 'teal' },
+};
+
+async function ninaAnimation() {
+  const frames = [
+    '✨',
+    '✨💙',
+    '✨💙💛',
+    '✨💙💛✨',
+    '✨💙💛✨💙',
+    '✨💙💛✨💙💛',
+    '✨💙💛✨💙💛✨',
+    '👧🏼💙💛✨💙💛✨',
+    '👧🏼💙💛✨💙💛✨💙',
+    '👧🏼💙💛✨💙💛✨💙💛',
+    '👧🏼💙💛✨💙💛✨💙💛✨',
+    '👧🏼💙💛✨💙💛✨💙💛✨👧🏼',
+    '👧🏼💙💛✨💙💛✨💙💛✨💙👧🏼',
+    '👧🏼💙💛✨💙💛✨💙💛✨💙💛👧🏼',
+    '👧🏼💙💛✨💙💛✨💙💛✨💙💛✨👧🏼',
+  ];
+  const div = document.createElement('div');
+  div.className = 'output emoji-big celebration';
+  terminal.appendChild(div);
+  for (const frame of frames) {
+    div.textContent = frame;
+    scrollToBottom();
+    await new Promise(r => setTimeout(r, 110));
+  }
+}
+
 function isKnownWord(lower) {
-  return animals[lower] || vehicles[lower] || colors[lower] ||
-    ['help','joke','jokes','funny','dance','party','magic','abracadabra','alakazam','shazam','presto','wizard','spell',
-     'rainbow','robot','beep','moon','sun','star','stars','clear','cls','hi','hello','hey',
-     'animals','colors','colours','vehicles','cars','trucks','letters','numbers'].includes(lower);
+  return animals[lower] || vehicles[lower] || colors[lower] || personal[lower] ||
+    ['help', 'ajuda',
+     'joke', 'jokes', 'funny', 'piada', 'piadas', 'engracado', 'engraçado',
+     'dance', 'danca', 'dança', 'party', 'festa',
+     'magic', 'abracadabra', 'alakazam', 'shazam', 'presto', 'wizard', 'spell', 'magia',
+     'rainbow', 'arco-iris', 'arco-íris',
+     'robot', 'beep', 'robo', 'robô',
+     'moon', 'sun', 'star', 'stars', 'lua', 'sol', 'estrela', 'estrelas',
+     'clear', 'cls', 'limpar',
+     'hi', 'hello', 'hey', 'oi', 'ola', 'olá',
+     'animals', 'animais',
+     'colors', 'colours', 'cores',
+     'vehicles', 'cars', 'trucks', 'veiculos', 'veículos', 'carros', 'caminhoes', 'caminhões',
+     'letters', 'numbers', 'letras', 'numeros', 'números',
+    ].includes(lower);
 }
 
 function isGibberish(text) {
@@ -343,11 +490,11 @@ function isGibberish(text) {
 
 const gibberishResponses = [
   (text) => ({ text: randomEmoji(12 + Math.floor(Math.random() * 8)), cls: 'emoji-flood celebration' }),
-  (text) => ({ text: `<pre class="creature-art">${makeCreature(text)}</pre>your letters made a creature!`, cls: 'magic celebration' }),
+  (text) => ({ text: `<pre class="creature-art">${makeCreature(text)}</pre>suas letras criaram uma criatura!`, cls: 'magic celebration' }),
   (text) => {
     const n = text.length;
     const emoji = allEmoji[Math.floor(Math.random() * allEmoji.length)];
-    return { text: `${n} letters! ${emoji.repeat(Math.min(n, 20))}`, cls: 'teal celebration' };
+    return { text: `${n} letras! ${emoji.repeat(Math.min(n, 20))}`, cls: 'teal celebration' };
   },
   (text) => ({ text: `<span class="rainbow giant">${text.toUpperCase()}</span>`, cls: 'celebration' }),
   (text) => {
@@ -359,9 +506,9 @@ const gibberishResponses = [
 async function handleCommand(raw) {
   const text = raw.trim();
   const lower = text.toLowerCase();
-  addLine('type here&gt;&nbsp;', text);
+  addLine('digite aqui&gt;&nbsp;', text);
 
-  if (!text) { addOutput('type something! 🎯', 'info'); scrollToBottom(); return; }
+  if (!text) { addOutput('digite algo! 🎯', 'info'); scrollToBottom(); return; }
 
   if (pendingChallenge) {
     const c = pendingChallenge;
@@ -369,34 +516,37 @@ async function handleCommand(raw) {
     if (answers.includes(lower)) {
       pendingChallenge = null;
       gibberishCount = 0;
-      addOutput(`<span class="rainbow giant">YES! ✨🎉✨</span>`, 'celebration');
+      addOutput(`<span class="rainbow giant">SIM! ✨🎉✨</span>`, 'celebration');
       scrollToBottom();
     } else {
       pendingChallenge = null;
     }
   }
 
-  // Single letter
+  // Letra única
   if (lower.length === 1 && /[a-z]/.test(lower)) {
     gibberishCount = 0;
     const upper = lower.toUpperCase();
-    const animal = letterAnimals[lower] || '✨';
-    addOutput(`<span class="rainbow giant">${upper}</span>  ${animal}`, 'celebration');
+    const emoji = letterAnimals[lower] || '✨';
+    const word  = letterWords[lower] || '';
+    addOutput(`<span class="rainbow giant">${upper}</span>  ${emoji}`, 'celebration');
+    if (word) addOutput(`<span style="font-size:20px;font-weight:bold;letter-spacing:2px">${upper} DE ${word}</span>`, 'info');
     scrollToBottom(); return;
   }
 
-  // Numbers
+  // Números
   if (/^\d+$/.test(text)) {
     gibberishCount = 0;
     const n = parseInt(text);
     if (n >= 1000) {
-      addOutput(`counting to ${n.toLocaleString()}...`, 'magic');
+      addOutput(`contando até ${n.toLocaleString('pt-BR')}...`, 'magic');
       await countUpAnimation(n);
       scrollToBottom(); return;
     }
     if (n <= 10) {
       const emoji = allEmoji[Math.floor(Math.random() * allEmoji.length)];
       addOutput(`${emoji.repeat(n)}`, 'celebration');
+      if (numberWords[n]) addOutput(`<span class="giant">${numberWords[n]}</span>`, 'success');
     } else if (n <= 100) {
       const comp = numberComparisons[n];
       const emoji = allEmoji[Math.floor(Math.random() * allEmoji.length)];
@@ -437,54 +587,115 @@ async function handleCommand(raw) {
     scrollToBottom(); return;
   }
 
-  if (['hello','hi','hey'].includes(lower)) { gibberishCount = 0; addOutput('👋 hello! 🖥️✨', 'success celebration'); scrollToBottom(); return; }
-
-  if (lower === 'help') {
+  // Termos pessoais especiais
+  if (personal[lower]) {
     gibberishCount = 0;
-    addOutput('🐾 animals: cat, dog, shark, dinosaur...', 'teal');
-    addOutput('🚗 vehicles: airplane, truck, rocket...', 'peach');
-    addOutput('🎨 colors: red, blue, green...', 'pink');
-    addOutput('🔤 letters: a, b, c...', 'success');
-    addOutput('🔢 numbers: 1, 2, 1000...', 'magic');
+    const p = personal[lower];
+    if (p.special === 'nina') {
+      addOutput(`<span class="rainbow giant">${p.label}</span>`, 'celebration');
+      await ninaAnimation();
+      addOutput('💙 que nome lindo! 💙', 'info');
+    } else {
+      addOutput(`<span class="rainbow giant">${p.label}</span>`, 'celebration');
+      addOutput(`<span class="emoji-big">${p.emojis}</span>`, 'celebration');
+    }
     scrollToBottom(); return;
   }
 
-  if (['joke','jokes','funny'].includes(lower)) {
+  if (['hello','hi','hey','oi','olá','ola'].includes(lower)) {
+    gibberishCount = 0;
+    addOutput('👋 oi! 🖥️✨', 'success celebration');
+    scrollToBottom(); return;
+  }
+
+  if (['help','ajuda'].includes(lower)) {
+    gibberishCount = 0;
+    addOutput('🐾 animais: gato, cachorro, tubarao, dinossauro...', 'teal');
+    addOutput('🚗 veículos: aviao, caminhao, foguete...', 'peach');
+    addOutput('🎨 cores: vermelho, azul, verde...', 'pink');
+    addOutput('🔤 letras: a, b, c...', 'success');
+    addOutput('🔢 números: 1, 2, 1000...', 'magic');
+    scrollToBottom(); return;
+  }
+
+  if (['joke','jokes','funny','piada','piadas','engracado','engraçado'].includes(lower)) {
     gibberishCount = 0;
     const jokes = [
-      '🤣 Why did the computer sneeze?\nIt had a virus!',
-      '🤣 What do you call a sleeping dinosaur?\nA dino-SNORE! 🦕💤',
-      '🤣 Why did the banana go to the doctor?\nIt wasn\'t PEELING well! 🍌',
-      '🤣 What do you call a fish without eyes?\nA fsh! 🐟',
-      '🤣 What do you call a bear with no teeth?\nA gummy bear! 🐻🍬',
-      '🤣 What does a cat say on Christmas?\nMeowy Christmas! 🐱🎄',
+      '🤣 Por que o computador espirrou?\nEle estava com vírus! 💻',
+      '🤣 O que o dinossauro disse antes de dormir?\nDino-RONCA! 🦕💤',
+      '🤣 Por que a banana foi ao médico?\nEla não estava se sentindo bem! 🍌',
+      '🤣 Como se chama um peixe sem olho?\nPx! 🐟',
+      '🤣 O que é um urso sem dentes?\nUm urso de goma! 🐻🍬',
+      '🤣 O que o gato disse no Natal?\nFeliz Namiaaau! 🐱🎄',
     ];
     addOutput(jokes[Math.floor(Math.random() * jokes.length)].replace('\n','<br>'), 'peach celebration');
     scrollToBottom(); return;
   }
 
-  if (['magic','abracadabra','alakazam','shazam','presto','wizard','spell'].includes(lower)) {
+  if (['magic','abracadabra','alakazam','shazam','presto','wizard','spell','magia'].includes(lower)) {
     gibberishCount = 0; addOutput('✨🔮💫⭐🌟✨🔮💫⭐🌟✨', 'magic celebration'); scrollToBottom(); return;
   }
 
-  if (lower === 'dance' || lower === 'party') { gibberishCount = 0; addOutput('🕺💃🪩🎵🎶🕺💃🪩🎵🎶', 'magic celebration'); scrollToBottom(); return; }
-  if (lower === 'rainbow') { gibberishCount = 0; addOutput('<span class="rainbow giant">RAINBOW!</span>', 'celebration'); addOutput('🔴🟠🟡🟢🔵🟣', 'celebration'); scrollToBottom(); return; }
-  if (lower === 'robot' || lower === 'beep') { gibberishCount = 0; addOutput('🤖 BEEP BOOP!', 'teal celebration'); addOutput('<pre>  [o_o]\n  /| |\\\n   | |\n  _|_|_</pre>', 'art'); scrollToBottom(); return; }
-  if (lower === 'moon') { gibberishCount = 0; addOutput('<span class="emoji-big">🌙🌜🌛🌝</span>', 'celebration'); scrollToBottom(); return; }
-  if (lower === 'sun') { gibberishCount = 0; addOutput('<span class="emoji-big">☀️🌞☀️🌞</span>', 'celebration'); scrollToBottom(); return; }
-  if (lower === 'star' || lower === 'stars') { gibberishCount = 0; addOutput('<span class="emoji-big">⭐🌟✨💫⭐🌟✨</span>', 'celebration'); scrollToBottom(); return; }
+  if (['dance','danca','dança','party','festa'].includes(lower)) {
+    gibberishCount = 0; addOutput('🕺💃🪩🎵🎶🕺💃🪩🎵🎶', 'magic celebration'); scrollToBottom(); return;
+  }
 
-  if (lower === 'animals') { gibberishCount = 0; addOutput(Object.keys(animals).map(a => `${animals[a].emoji} ${a}`).join('  '), 'teal'); scrollToBottom(); return; }
-  if (['vehicles','cars','trucks'].includes(lower)) { gibberishCount = 0; addOutput(Object.keys(vehicles).map(v => `${vehicles[v].emoji} ${v}`).join('  '), 'peach'); scrollToBottom(); return; }
-  if (['colors','colours'].includes(lower)) { gibberishCount = 0; addOutput(Object.keys(colors).map(c => `${colors[c].emoji} ${c}`).join('  '), 'pink'); scrollToBottom(); return; }
-  if (lower === 'letters') { gibberishCount = 0; addOutput('<span class="rainbow giant">A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</span>', 'celebration'); scrollToBottom(); return; }
-  if (lower === 'numbers') { gibberishCount = 0; addOutput('0️⃣1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟', 'celebration'); scrollToBottom(); return; }
-  if (lower === 'clear' || lower === 'cls') { terminal.innerHTML = ''; addOutput('✨', 'success'); scrollToBottom(); return; }
-
-  if (lower.startsWith('i am ') || lower.startsWith('my name is ')) {
+  if (['rainbow','arco-iris','arco-íris'].includes(lower)) {
     gibberishCount = 0;
-    const name = lower.replace(/^(i am |my name is )/, '').trim();
-    addOutput(`<span class="rainbow giant">HI ${name.toUpperCase()}!</span> ✨`, 'celebration');
+    addOutput('<span class="rainbow giant">ARCO-ÍRIS!</span>', 'celebration');
+    addOutput('🔴🟠🟡🟢🔵🟣', 'celebration');
+    scrollToBottom(); return;
+  }
+
+  if (['robot','robo','robô','beep'].includes(lower)) {
+    gibberishCount = 0;
+    addOutput('🤖 BIP BOP!', 'teal celebration');
+    addOutput('<pre>  [o_o]\n  /| |\\\n   | |\n  _|_|_</pre>', 'art');
+    scrollToBottom(); return;
+  }
+
+  if (['moon','lua'].includes(lower)) { gibberishCount = 0; addOutput('<span class="emoji-big">🌙🌜🌛🌝</span>', 'celebration'); scrollToBottom(); return; }
+  if (['sun','sol'].includes(lower)) { gibberishCount = 0; addOutput('<span class="emoji-big">☀️🌞☀️🌞</span>', 'celebration'); scrollToBottom(); return; }
+  if (['star','stars','estrela','estrelas'].includes(lower)) { gibberishCount = 0; addOutput('<span class="emoji-big">⭐🌟✨💫⭐🌟✨</span>', 'celebration'); scrollToBottom(); return; }
+
+  if (['animals','animais'].includes(lower)) {
+    gibberishCount = 0;
+    addOutput(ptAnimalNames.map(a => `${animals[a].emoji} ${a}`).join('  '), 'teal');
+    scrollToBottom(); return;
+  }
+
+  if (['vehicles','cars','trucks','veiculos','veículos','carros','caminhoes','caminhões'].includes(lower)) {
+    gibberishCount = 0;
+    addOutput(ptVehicleNames.map(v => `${vehicles[v].emoji} ${v}`).join('  '), 'peach');
+    scrollToBottom(); return;
+  }
+
+  if (['colors','colours','cores'].includes(lower)) {
+    gibberishCount = 0;
+    addOutput(ptColorNames.map(c => `${colors[c].emoji} ${c}`).join('  '), 'pink');
+    scrollToBottom(); return;
+  }
+
+  if (['letters','letras'].includes(lower)) {
+    gibberishCount = 0;
+    addOutput('<span class="rainbow giant">A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</span>', 'celebration');
+    scrollToBottom(); return;
+  }
+
+  if (['numbers','numeros','números'].includes(lower)) {
+    gibberishCount = 0;
+    addOutput('0️⃣1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟', 'celebration');
+    scrollToBottom(); return;
+  }
+
+  if (['clear','cls','limpar'].includes(lower)) { terminal.innerHTML = ''; addOutput('✨', 'success'); scrollToBottom(); return; }
+
+  if (lower.startsWith('i am ') || lower.startsWith('my name is ') ||
+      lower.startsWith('eu sou ') || lower.startsWith('me chamo ') ||
+      lower.startsWith('meu nome e ') || lower.startsWith('meu nome é ')) {
+    gibberishCount = 0;
+    const name = lower.replace(/^(i am |my name is |eu sou |me chamo |meu nome (é|e) )/, '').trim();
+    addOutput(`<span class="rainbow giant">OI ${name.toUpperCase()}!</span> ✨`, 'celebration');
     scrollToBottom(); return;
   }
 
@@ -504,30 +715,37 @@ async function handleCommand(raw) {
   scrollToBottom();
 }
 
-// Show welcome first
+// Mostra boas-vindas
 window._showWelcome();
 
-// Create input line inside terminal (after welcome so innerHTML doesn't destroy it)
+// Cria a linha de input dentro do terminal (após welcome para não destruir o innerHTML)
 const inputLine = document.createElement('div');
 inputLine.className = 'input-line';
-inputLine.innerHTML = '<span class="prompt">type here&gt;&nbsp;</span>';
+inputLine.innerHTML = '<span class="prompt">digite aqui&gt;&nbsp;</span>';
 const inputEl = document.createElement('input');
 inputEl.type = 'text';
 inputEl.id = 'input';
 inputEl.autocomplete = 'off';
-inputEl.autocapitalize = 'off';
+inputEl.autocapitalize = 'characters';
 inputEl.spellcheck = false;
-inputEl.style.cssText = 'background:none;border:none;color:var(--text);font-family:"JetBrains Mono",monospace;font-size:16px;outline:none;flex:1;caret-color:var(--prompt);';
+inputEl.style.cssText = 'background:none;border:none;color:var(--text);font-family:"JetBrains Mono",monospace;font-size:16px;outline:none;flex:1;caret-color:var(--prompt);text-transform:uppercase;';
 inputLine.appendChild(inputEl);
 terminal.appendChild(inputLine);
 
 inputEl.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') { handleCommand(inputEl.value); inputEl.value = ''; }
+  if (e.key === 'Enter') {
+    terminal.classList.remove('flash');
+    void terminal.offsetWidth;
+    terminal.classList.add('flash');
+    terminal.addEventListener('animationend', () => terminal.classList.remove('flash'), { once: true });
+    handleCommand(inputEl.value);
+    inputEl.value = '';
+  }
 });
 document.addEventListener('click', () => inputEl.focus());
 inputEl.focus();
 
-// Override scrollToBottom to keep input line at the end of content
+// Sobrescreve scrollToBottom para manter a linha de input no fim do conteúdo
 scrollToBottom = function() {
   terminal.appendChild(inputLine);
   terminal.scrollTop = terminal.scrollHeight;
